@@ -1,21 +1,28 @@
-const {
-    Connection,
-    Keypair,
-    SystemProgram,
-    Transaction,
-    clusterApiUrl,
-    sendAndConfirmTransaction,
-    PublicKey,
-} = require("@solana/web3.js");
-const { TokenSwap,TokenSwapLayout,TOKEN_SWAP_PROGRAM_ID,CurveType } = require("@solana/spl-token-swap");
-const poolPublicKey = new PublicKey("BR53RoF3SybB3QEYDJXkLrQpoveRWGdvH2FBWt79dUN4")
-const mint = new PublicKey("111113BcqPNhoJmv38M21RgzvwYwHY6p9xDBTTYfLb");
-const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
-connection.getParsedAccountInfo(poolPublicKey).then(accountInfo => {
-   let account = TokenSwapLayout.decode(accountInfo.value.data);
-   if(account.mintA.toString()===mint.toString())
-   {console.log(account.tokenAccountA.toString(),"a")}
-   else{
-    console.log(account.tokenAccountB.toString(),"b")
-   }
-});
+const url = `https://mainnet.helius-rpc.com/?api-key=ff3c6e4e-511d-4b13-9ed7-7beab8f250e5`
+
+const getAssetsByCreator = async () => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'my-id',
+      method: 'getAssetsByCreator',
+      params: {
+        creatorAddress: '2tURYHc9JqntFh14kRuoJNrwbenQSJ5fErAuDUUzpudr',
+        onlyVerified: true,
+        page: 1, // Starts at 1
+        limit: 1000
+      },
+    }),
+  });
+  const { result } = await response.json();
+  let holders = []
+  for(const item of result.items){
+     holders.push({nftid:item.id,owner:item.ownership.owner})
+  }
+  console.log(holders)
+};
+getAssetsByCreator(); 

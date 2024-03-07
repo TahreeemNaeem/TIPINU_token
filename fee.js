@@ -27,9 +27,8 @@ const bs58 = require('bs58')
 
 const LIQUIDITY_POOL_ADDRESS = new PublicKey("");
 const addressuser = new PublicKey("")
-const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
 const mint = new PublicKey("");
-const nft = new PublicKey("");
 const key = bs58.decode("")
 const payer = new Keypair({ secretKey: key, publicKey: "" })
 const decimals = 4
@@ -138,7 +137,8 @@ async function distributeReflections(sender ,amount, allAccounts) {
 }
 
 async function distributeNFTReflections(sender,amount) {
-    const allHolders = await getAllNftsHolder();
+    const allHolders = await getNFTSByCreator();
+    const transferAmount = BigInt(parseInt(amount/allHolders.length));
     for (const account of allHolders) {
         const [ins, receiver] = await createTokenAccount(mint, new PublicKey(account.owner));
         if (ins) {
@@ -156,7 +156,6 @@ async function distributeNFTReflections(sender,amount) {
             );
             console.log(transactionSignature, "nft");
         }
-        const transferAmount = BigInt(parseInt(amount * account.percent));
         transactionSignature = await transferChecked(
             connection,
             payer,
@@ -204,19 +203,6 @@ async function accountstowithdrawFee(allAccounts) {
         }
     }
     return { accountsToWithdrawFrom, amounttowithdraw };
-}
-async function getAllNftsHolder() {
-    let nftsHolders = []
-    const acc = MintLayout.decode((await connection.getAccountInfo(nft)).data);
-    const ts = (acc.supply.toString())
-    const Accounts = (await connection.getTokenLargestAccounts(nft)).value;
-    for (const account of Accounts) {
-        const accountInfo = await connection.getParsedAccountInfo(
-            account.address
-        );
-        nftsHolders.push({ ...account, owner: accountInfo.value.data.parsed.info.owner, percent: (account.uiAmount / ts) })
-    }
-    return nftsHolders;
 }
 async function getAllAccountsInfo(allAccounts) {
     const accounts = [];
@@ -297,3 +283,30 @@ async function getPoolTokenAccount() {
         return account.tokenAccountB
     }
 }
+const url = `https://mainnet.helius-rpc.com/?api-key=ff3c6e4e-511d-4b13-9ed7-7beab8f250e5`
+
+const getNFTSByCreator = async () => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'my-id',
+      method: 'getAssetsByCreator',
+      params: {
+        creatorAddress: '2tURYHc9JqntFh14kRuoJNrwbenQSJ5fErAuDUUzpudr',
+        onlyVerified: true,
+        page: 1,
+        limit: 1000
+      },
+    }),
+  });
+  const { result } = await response.json();
+  let holders = []
+  for(const item of result.items){
+     holders.push({nftid:item.id,owner:item.ownership.owner})
+  }
+  return holders
+};
