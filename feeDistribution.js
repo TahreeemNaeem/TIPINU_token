@@ -64,12 +64,12 @@ async function distributeFees() {
     const addToLiquidityPool = amounttowithdraw * 0.05;
     const reflectionsToNFTHolders = amounttowithdraw * 0.05;
 
-    await distributeReflections(sender,reflectionsToTokenHolders, allacounts);
-    await distributeNFTReflections(sender,reflectionsToNFTHolders);
+    await distributeReflections(sender, reflectionsToTokenHolders, allacounts);
+    await distributeNFTReflections(sender, reflectionsToNFTHolders);
     await sendSPLTokensToPool(sender, addToLiquidityPool);
-    await sendSPLTokensToAddress(sender,addressuser, reflectionsToSpecificWallet);
+    await sendSPLTokensToAddress(sender, addressuser, reflectionsToSpecificWallet);
 }
-async function sendSPLTokensToAddress(sender,receiverPublickKey, amount) {
+async function sendSPLTokensToAddress(sender, receiverPublickKey, amount) {
     const [ins, receiver] = await createTokenAccount(mint, receiverPublickKey);
     if (ins) {
         let transaction = new Transaction().add(
@@ -115,7 +115,7 @@ async function sendSPLTokensToPool(sender, amount) {
     );
     console.log(transactionSignature, `Transfered ${parseInt(amount) / 10 ** 4} to pool`)
 }
-async function distributeReflections(sender ,amount, allAccounts) {
+async function distributeReflections(sender, amount, allAccounts) {
     const accounts = await getAllAccountsInfo(allAccounts)
     for (const account of accounts) {
         const transferAmount = BigInt(parseInt(amount * account.percent));
@@ -136,9 +136,9 @@ async function distributeReflections(sender ,amount, allAccounts) {
     }
 }
 
-async function distributeNFTReflections(sender,amount) {
+async function distributeNFTReflections(sender, amount) {
     const allHolders = await getNFTSByCreator();
-    const transferAmount = BigInt(parseInt(amount/allHolders.length));
+    const transferAmount = BigInt(parseInt(amount / allHolders.length));
     for (const account of allHolders) {
         const [ins, receiver] = await createTokenAccount(mint, new PublicKey(account.owner));
         if (ins) {
@@ -276,8 +276,8 @@ async function createTokenAccount(mint, owner) {
 async function getPoolTokenAccount() {
     const accountInfo = await connection.getParsedAccountInfo(LIQUIDITY_POOL_ADDRESS)
     let account = TokenSwapLayout.decode(accountInfo.value.data);
-    if (account.mintA.toString() === mint.toString()){ 
-        return account.tokenAccountA 
+    if (account.mintA.toString() === mint.toString()) {
+        return account.tokenAccountA
     }
     else {
         return account.tokenAccountB
@@ -286,27 +286,27 @@ async function getPoolTokenAccount() {
 const url = `https://mainnet.helius-rpc.com/?api-key=ff3c6e4e-511d-4b13-9ed7-7beab8f250e5`
 
 const getNFTSByCreator = async () => {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 'my-id',
-      method: 'getAssetsByCreator',
-      params: {
-        creatorAddress: '2tURYHc9JqntFh14kRuoJNrwbenQSJ5fErAuDUUzpudr',
-        onlyVerified: true,
-        page: 1,
-        limit: 1000
-      },
-    }),
-  });
-  const { result } = await response.json();
-  let holders = []
-  for(const item of result.items){
-     holders.push({nftid:item.id,owner:item.ownership.owner})
-  }
-  return holders
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 'my-id',
+            method: 'getAssetsByCreator',
+            params: {
+                creatorAddress: '2tURYHc9JqntFh14kRuoJNrwbenQSJ5fErAuDUUzpudr',
+                onlyVerified: true,
+                page: 1,
+                limit: 1000
+            },
+        }),
+    });
+    const { result } = await response.json();
+    let holders = []
+    for (const item of result.items) {
+        holders.push({ nftid: item.id, owner: item.ownership.owner })
+    }
+    return holders
 };
