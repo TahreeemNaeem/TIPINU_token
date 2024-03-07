@@ -5,14 +5,12 @@ const {
     Transaction,
     clusterApiUrl,
     sendAndConfirmTransaction,
-    PublicKey,
 } = require("@solana/web3.js");
 const {
     ExtensionType,
     TOKEN_2022_PROGRAM_ID,
     createInitializeMintInstruction,
     getMintLen,
-    getTokenMetadata,
     getAssociatedTokenAddress,
     createInitializeTransferFeeConfigInstruction,
     createAssociatedTokenAccountInstruction,
@@ -23,18 +21,11 @@ const {
 } = require("@solana/spl-token");
 const {
     createInitializeInstruction,
-    createUpdateFieldInstruction,
-    createRemoveKeyInstruction,
     pack,
-    TokenMetadata,
 } = require("@solana/spl-token-metadata");
 const { createUmi } = require('@metaplex-foundation/umi-bundle-defaults');
-const {
-    createV1,
-    createMetadataAccountV3,
-    TokenStandard,
-} = require("@metaplex-foundation/mpl-token-metadata");
-const { createSignerFromKeypair, none, percentAmount, publicKey, signerIdentity, some } = require("@metaplex-foundation/umi");
+
+const { createSignerFromKeypair ,signerIdentity } = require("@metaplex-foundation/umi");
 const bs58 = require('bs58')
 
 async function createToken() {
@@ -145,14 +136,12 @@ async function createToken() {
         initializeMetadataInstruction,
         createownerTokenAccount,
         mintInstruction
-        // createMetadataAccountInstruction
     );
 
     transactionSignature = await sendAndConfirmTransaction(
         connection,
         transaction,
         [payer, mintKeypair]
-        // { skipPreflight: true }
     );
 
     console.log(transactionSignature);
